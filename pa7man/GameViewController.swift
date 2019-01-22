@@ -9,31 +9,75 @@
 import UIKit
 import SpriteKit
 import GameplayKit
+import GameKit
 
-class GameViewController: UIViewController {
+private var gameViewController: UIViewController!
 
+class GameViewController: UIViewController, GKGameCenterControllerDelegate {
+    
+    func gameCenterViewControllerDidFinish(_ gameCenterViewController: GKGameCenterViewController) {
+        gameCenterViewController.dismiss(animated: true, completion: nil)
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        authPlayer()
         
-        if let view = self.view as! SKView? {
-            // Load the SKScene from 'GameScene.sks'
-            if let scene = SKScene(fileNamed: "GameScene") {
-                // Set the scale mode to scale to fit the window
-                scene.scaleMode = .aspectFill
-                
-                // Present the scene
-                view.presentScene(scene)
+    }
+    
+    func authPlayer() {
+        let localPlayer = GKLocalPlayer.local
+        gameViewController = self
+        
+        localPlayer.authenticateHandler = {
+            (view, error) in
+            if view != nil {
+                self.present(view!, animated: true, completion: nil)
+            } else {
+                if !GKLocalPlayer.local.isAuthenticated {
+                    self.ask4GameCenter()
+                } else {
+                    self.gameOn()
+                }
             }
-            
-            view.ignoresSiblingOrder = true
-            
-            view.showsFPS = true
-            view.showsNodeCount = true
         }
+    }
+    
+    func gameOn() {
+        if let skView = self.view as? SKView {
+            if skView.scene == nil {
+                let scene = GameScene(size: CGSize(width: self.view!.bounds.width * 2, height: self.view!.bounds.height * 2))
+                skView.showsFPS = true
+                skView.showsNodeCount = true
+                skView.showsPhysics = true
+                skView.ignoresSiblingOrder = true
+                scene.scaleMode = .aspectFill
+                skView.presentScene(scene)
+            }
+        }
+    }
+    
+    func ask4GameCenter() {
+        let myAlert: UIAlertController = UIAlertController(title: "Attention", message: "Log into Game Center to record High Scores", preferredStyle: .alert)
+        
+        myAlert.addAction(UIAlertAction(title: "Ignore", style: .default, handler: { (action) in
+            self.gameOn()
+        }))
+        myAlert.addAction(UIAlertAction(title: "Logon", style: .default, handler: { (action) in
+            guard let settingsUrl = URL(string: UIApplication.openSettingsURLString) else {
+                return
+            }
+            UIApplication.shared.open(settingsUrl, options: [:], completionHandler: { (success) in
+                if success {
+                    self.gameOn()
+                }
+            })
+        }))
+        self.view?.window?.rootViewController?.present(myAlert, animated: true, completion: nil)
     }
 
     override var shouldAutorotate: Bool {
-        return true
+        return false
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
