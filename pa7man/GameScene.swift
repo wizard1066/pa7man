@@ -5,6 +5,7 @@
 //  Created by localadmin on 21.01.19.
 //  Copyright © 2019 ch.cqd.pa7man. All rights reserved.
 //
+// mazeMan
 
 import SpriteKit
 import GameplayKit
@@ -16,6 +17,13 @@ class GameScene: SKScene, touchMe, SKPhysicsContactDelegate {
         static let rien: UInt32 = 0
         static let pacMan: UInt32 = 0b1
         static let mazeMan: UInt32 = 0b1 << 1
+    }
+    
+    struct ObjectSpace {
+        static let base: CGFloat = 0
+        static let rings: CGFloat = 1
+        static let doors: CGFloat = 2
+        static let player: CGFloat = 4
     }
     
     var manager: CMMotionManager!
@@ -39,6 +47,7 @@ class GameScene: SKScene, touchMe, SKPhysicsContactDelegate {
         pacman?.physicsBody?.collisionBitMask = PhysicsCat.mazeMan
         pacman?.physicsBody?.contactTestBitMask = PhysicsCat.pacMan | PhysicsCat.mazeMan
         pacman?.physicsBody?.affectedByGravity = false
+        pacman?.zPosition = ObjectSpace.player
         
         addChild(pacman!)
         
@@ -74,7 +83,10 @@ class GameScene: SKScene, touchMe, SKPhysicsContactDelegate {
         
         let centralP = CGPoint(x: self.view!.bounds.maxX, y: self.view!.bounds.maxY)
         let bend:CGFloat = 64
+        let door: CGFloat = 64
         let sizeV: CGFloat = 96
+        var prandomValue:Int = 0
+        var randomValue:Int
         
         let randomSource = GKARC4RandomSource()
         let randomDistribution = GKRandomDistribution(randomSource: randomSource, lowestValue: 0, highestValue: 3)
@@ -82,41 +94,59 @@ class GameScene: SKScene, touchMe, SKPhysicsContactDelegate {
         for loop in 1...8 {
             
         let tweek = CGFloat(loop)
-        let randomValue = randomDistribution.nextInt()
-            
+        repeat {
+            randomValue = randomDistribution.nextInt()
+        } while randomValue == prandomValue
+        prandomValue = randomValue
         print("randomV \(randomValue)")
         
         let sP = CGPoint(x: centralP.x, y: centralP.y + sizeV * tweek)
         let eP = CGPoint(x: centralP.x + sizeV * tweek, y: centralP.y)
-        let cP = CGPoint(x: centralP.x + bend * tweek, y: centralP.y + bend * tweek)
-        if randomValue != 0 {
-            circleSlice(startP: sP, endP: eP, controlP: cP)
-        }
+        let cP = CGPoint(x: centralP.x + (bend * tweek), y: centralP.y + (bend * tweek))
+            if randomValue != 0 {
+                circleSlice(startP: sP, endP: eP, controlP: cP, color: nil)
+            } else {
+                let eP = CGPoint(x: centralP.x + sizeV * tweek, y: centralP.y + door)
+                let cP = CGPoint(x: centralP.x + (bend * tweek), y: centralP.y + (bend * tweek))
+                circleSlice(startP: sP, endP: eP, controlP: cP, color: UIColor.blue)
+            }
         
         let sP2 = eP
         let eP2 = CGPoint(x: centralP.x, y: centralP.y - sizeV * tweek)
-        let cP2 = CGPoint(x: centralP.x + bend * tweek, y: centralP.y - bend * tweek)
-        if randomValue != 1 {
-            circleSlice(startP: sP2, endP: eP2, controlP: cP2)
-        }
+        let cP2 = CGPoint(x: centralP.x + (bend * tweek), y: centralP.y - (bend * tweek))
+            if randomValue != 1 {
+                circleSlice(startP: sP2, endP: eP2, controlP: cP2, color: nil)
+            } else {
+                let eP2 = CGPoint(x: centralP.x + door, y: centralP.y - sizeV * tweek)
+                let cP2 = CGPoint(x: centralP.x + (bend * tweek), y: centralP.y - (bend * tweek) + door)
+                circleSlice(startP: sP2, endP: eP2, controlP: cP2, color: UIColor.green)
+            }
         let sP3 = eP2
         let eP3 = CGPoint(x: centralP.x - sizeV * tweek, y: centralP.y)
-        let cP3 = CGPoint(x: centralP.x - bend * tweek, y: centralP.y - bend * tweek)
-        if randomValue != 2 {
-            circleSlice(startP: sP3, endP: eP3, controlP: cP3)
-        }
+        let cP3 = CGPoint(x: centralP.x - (bend * tweek), y: centralP.y - (bend * tweek))
+            if randomValue != 2 {
+                circleSlice(startP: sP3, endP: eP3, controlP: cP3, color: nil)
+            } else {
+                let eP3 = CGPoint(x: centralP.x - sizeV * tweek, y: centralP.y - door)
+                let cP3 = CGPoint(x: centralP.x - (bend * tweek) + door, y: centralP.y - (bend * tweek))
+                circleSlice(startP: sP3, endP: eP3, controlP: cP3, color: UIColor.purple)
+            }
         let sP4 = eP3
         let eP4 = sP
-        let cP4 = CGPoint(x: centralP.x - bend * tweek, y: centralP.y + bend * tweek)
-        if randomValue != 3 {
-            circleSlice(startP: sP4, endP: eP4, controlP: cP4)
-        }
+        let cP4 = CGPoint(x: centralP.x - (bend * tweek), y: centralP.y + (bend * tweek))
+            if randomValue != 3 {
+                circleSlice(startP: sP4, endP: eP4, controlP: cP4, color: nil)
+            } else {
+                let eP4 = CGPoint(x: centralP.x - door, y: centralP.y + sizeV * tweek)
+                let cP4 = CGPoint(x: centralP.x - (bend * tweek) + door, y: centralP.y + (bend * tweek) )
+                circleSlice(startP: sP4, endP: eP4, controlP: cP4, color: UIColor.yellow)
+            }
         }
         
         physicsWorld.contactDelegate = self
     }
     
-    func circleSlice(startP: CGPoint, endP: CGPoint, controlP: CGPoint)  {
+    func circleSlice(startP: CGPoint, endP: CGPoint, controlP: CGPoint, color: UIColor?)  {
 //
         let beginBox = SKShapeNode(circleOfRadius: 10)
         beginBox.position = startP
@@ -125,8 +155,13 @@ class GameScene: SKScene, touchMe, SKPhysicsContactDelegate {
 //
         let redBox = SKShapeNode(circleOfRadius: 10)
         redBox.position = controlP
-        redBox.fillColor = UIColor.red
-        redBox.strokeColor = UIColor.red
+        if color == nil {
+            redBox.fillColor = UIColor.red
+            redBox.strokeColor = UIColor.red
+        } else {
+            redBox.fillColor = color!
+            redBox.strokeColor = color!
+        }
 //
         let endBox = SKShapeNode(circleOfRadius: 10)
 
@@ -134,17 +169,11 @@ class GameScene: SKScene, touchMe, SKPhysicsContactDelegate {
         endBox.fillColor = UIColor.white
         endBox.strokeColor = UIColor.white
 //
-//        let blueBox = SKShapeNode(circleOfRadius: 10)
-//
-//        blueBox.position = CGPoint(x: endBox.position.x - (b1/2), y: y3)
-//
-//        blueBox.fillColor = UIColor.blue
-//        blueBox.strokeColor = UIColor.blue
-//
+
         addChild(beginBox)
         addChild(endBox)
         addChild(redBox)
-//        addChild(blueBox)
+
         
         let line2 = UIBezierPath()
 //        line2.move(to: beginBox.position)
@@ -159,7 +188,7 @@ class GameScene: SKScene, touchMe, SKPhysicsContactDelegate {
         line2Dashed.physicsBody?.collisionBitMask = PhysicsCat.pacMan
         line2Dashed.physicsBody?.contactTestBitMask = PhysicsCat.pacMan | PhysicsCat.mazeMan
         line2Dashed.physicsBody?.affectedByGravity = false
-        
+        line2Dashed.zPosition = ObjectSpace.rings
         addChild(line2Dashed)
         
     }
