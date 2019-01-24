@@ -26,6 +26,9 @@ class GameScene: SKScene, touchMe, SKPhysicsContactDelegate {
         static let player: CGFloat = 4
     }
     
+    let degreesToRadians = CGFloat.pi / 180
+    let radiansToDegrees = 180 / CGFloat.pi
+    
     var manager: CMMotionManager!
     
     func spriteTouched(box: TouchableSprite) {
@@ -91,7 +94,7 @@ class GameScene: SKScene, touchMe, SKPhysicsContactDelegate {
         let randomSource = GKARC4RandomSource()
         let randomDistribution = GKRandomDistribution(randomSource: randomSource, lowestValue: 0, highestValue: 3)
         
-        for loop in 1...8 {
+        for loop in 1...1 {
             
         let tweek = CGFloat(loop)
         repeat {
@@ -99,59 +102,94 @@ class GameScene: SKScene, touchMe, SKPhysicsContactDelegate {
         } while randomValue == prandomValue
         prandomValue = randomValue
         print("randomV \(randomValue)")
+            
         
-        let sP = CGPoint(x: centralP.x, y: centralP.y + sizeV * tweek)
-        let eP = CGPoint(x: centralP.x + sizeV * tweek, y: centralP.y)
-        let cP = CGPoint(x: centralP.x + (bend * tweek), y: centralP.y + (bend * tweek))
+        
+            let sP = CGPoint(x: centralP.x, y: centralP.y + sizeV * tweek)
+            let eP = CGPoint(x: centralP.x + sizeV * tweek, y: centralP.y)
+            let cP = CGPoint(x: centralP.x + (bend * tweek), y: centralP.y + (bend * tweek))
             if randomValue != 0 {
-                circleSlice(startP: sP, endP: eP, controlP: cP, color: nil)
+//                circleSlice(line2: line, startP: sP, endP: eP, controlP: cP, color: nil, makeMove: true)
             } else {
                 let eP = CGPoint(x: centralP.x + sizeV * tweek, y: centralP.y + door)
                 let cP = CGPoint(x: centralP.x + (bend * tweek), y: centralP.y + (bend * tweek))
-                circleSlice(startP: sP, endP: eP, controlP: cP, color: UIColor.blue)
+//                circleSlice(line2: line, startP: sP, endP: eP, controlP: cP, color: UIColor.blue, makeMove: true)
             }
-        
-        let sP2 = eP
-        let eP2 = CGPoint(x: centralP.x, y: centralP.y - sizeV * tweek)
-        let cP2 = CGPoint(x: centralP.x + (bend * tweek), y: centralP.y - (bend * tweek))
+            
+            let sP2 = eP
+            let eP2 = CGPoint(x: centralP.x, y: centralP.y - sizeV * tweek)
+            let cP2 = CGPoint(x: centralP.x + (bend * tweek), y: centralP.y - (bend * tweek))
             if randomValue != 1 {
-                circleSlice(startP: sP2, endP: eP2, controlP: cP2, color: nil)
+//                circleSlice(line2: line, startP: sP2, endP: eP2, controlP: cP2, color: nil, makeMove: false)
             } else {
                 let eP2 = CGPoint(x: centralP.x + door, y: centralP.y - sizeV * tweek)
                 let cP2 = CGPoint(x: centralP.x + (bend * tweek), y: centralP.y - (bend * tweek) + door)
-                circleSlice(startP: sP2, endP: eP2, controlP: cP2, color: UIColor.green)
+//                circleSlice(line2: line, startP: sP2, endP: eP2, controlP: cP2, color: UIColor.green, makeMove: false)
             }
-        let sP3 = eP2
-        let eP3 = CGPoint(x: centralP.x - sizeV * tweek, y: centralP.y)
-        let cP3 = CGPoint(x: centralP.x - (bend * tweek), y: centralP.y - (bend * tweek))
+            let sP3 = eP2
+            let eP3 = CGPoint(x: centralP.x - sizeV * tweek, y: centralP.y)
+            let cP3 = CGPoint(x: centralP.x - (bend * tweek), y: centralP.y - (bend * tweek))
             if randomValue != 2 {
-                circleSlice(startP: sP3, endP: eP3, controlP: cP3, color: nil)
+                //                circleSlice(startP: sP3, endP: eP3, controlP: cP3, color: nil)
             } else {
                 let eP3 = CGPoint(x: centralP.x - sizeV * tweek, y: centralP.y - door)
                 let cP3 = CGPoint(x: centralP.x - (bend * tweek) + door, y: centralP.y - (bend * tweek))
-                circleSlice(startP: sP3, endP: eP3, controlP: cP3, color: UIColor.purple)
+                //                circleSlice(startP: sP3, endP: eP3, controlP: cP3, color: UIColor.purple)
             }
-        let sP4 = eP3
-        let eP4 = sP
-        let cP4 = CGPoint(x: centralP.x - (bend * tweek), y: centralP.y + (bend * tweek))
+            let sP4 = eP3
+            let eP4 = sP
+            let cP4 = CGPoint(x: centralP.x - (bend * tweek), y: centralP.y + (bend * tweek))
             if randomValue != 3 {
-                circleSlice(startP: sP4, endP: eP4, controlP: cP4, color: nil)
+                //                circleSlice(startP: sP4, endP: eP4, controlP: cP4, color: nil)
             } else {
                 let eP4 = CGPoint(x: centralP.x - door, y: centralP.y + sizeV * tweek)
                 let cP4 = CGPoint(x: centralP.x - (bend * tweek) + door, y: centralP.y + (bend * tweek) )
-                circleSlice(startP: sP4, endP: eP4, controlP: cP4, color: UIColor.yellow)
+                //                circleSlice(startP: sP4, endP: eP4, controlP: cP4, color: UIColor.yellow)
+            }
+            let gap:CGFloat = 25
+            
+            
+            for link in 1...8 {
+                var line = UIBezierPath()
+                var divisor = 0.8
+                
+                let topLeft = CGPoint(x: -85 * Double(link) * divisor, y: 85 * Double(link) * divisor)
+                let topRight = CGPoint(x: 85 * Double(link) * divisor, y: 85 * Double(link) * divisor)
+                let lowLeft = CGPoint(x: -85 * Double(link) * divisor, y: -85 * Double(link) * divisor)
+                let lowRight = CGPoint(x: 85 * Double(link) * divisor, y: -85 * Double(link) * divisor)
+                
+                let topMid = CGPoint(x: 0 + gap, y: 100 * CGFloat(Double(link) * divisor))
+                let topMid2 = CGPoint(x: 0 - gap, y: 100 * CGFloat(Double(link) * divisor))
+                let midRight = CGPoint(x: CGFloat(100 * Double(link) * divisor), y: 0)
+//                let midRight2 = CGPoint(x: CGFloat(100 * Double(link) * divisor), y: 0 - gap)
+//                let lowMid = CGPoint(x: 0, y: CGFloat(-100 * Double(link) * divisor))
+                let lowMid = CGPoint(x: 0 + gap , y: CGFloat(-100 * Double(link) * divisor))
+                let lowMid2 = CGPoint(x: 0 - gap, y: CGFloat(-100 * Double(link) * divisor))
+                let midLeft = CGPoint(x: -100 * Double(link) * divisor, y: 0)
+                
+                let randomFloat = CGFloat(GKRandomSource.sharedRandom().nextInt(upperBound: 360)) * degreesToRadians
+                circleSlice(line2: line, startP: topMid, endP: midRight, controlP: topRight, color: UIColor.white, makeMove: true)
+                circleSlice(line2: line, startP: midRight, endP: lowMid, controlP: lowRight, color: UIColor.white, makeMove: false)
+                makeSprite(line2: line, random: randomFloat)
+                line = UIBezierPath()
+                circleSlice(line2: line, startP: lowMid2, endP: midLeft, controlP: lowLeft, color: UIColor.white, makeMove: true)
+                circleSlice(line2: line, startP: midLeft, endP: topMid2, controlP: topLeft, color: UIColor.white, makeMove: false)
+                makeSprite(line2: line, random: randomFloat)
             }
         }
         
         physicsWorld.contactDelegate = self
     }
     
-    func circleSlice(startP: CGPoint, endP: CGPoint, controlP: CGPoint, color: UIColor?)  {
+    func circleSlice(line2: UIBezierPath, startP: CGPoint, endP: CGPoint, controlP: CGPoint, color: UIColor?, makeMove: Bool)  {
 //
+        let centralP = CGPoint(x: self.view!.bounds.maxX, y: self.view!.bounds.maxY)
+        
         let beginBox = SKShapeNode(circleOfRadius: 10)
         beginBox.position = startP
         beginBox.fillColor = UIColor.purple
         beginBox.strokeColor = UIColor.purple
+        
 //
         let redBox = SKShapeNode(circleOfRadius: 10)
         redBox.position = controlP
@@ -170,27 +208,51 @@ class GameScene: SKScene, touchMe, SKPhysicsContactDelegate {
         endBox.strokeColor = UIColor.white
 //
 
-        addChild(beginBox)
-        addChild(endBox)
-        addChild(redBox)
+//        addChild(beginBox)
+//        addChild(endBox)
+//        addChild(redBox)
 
         
-        let line2 = UIBezierPath()
+//        let line2 = UIBezierPath()
 //        line2.move(to: beginBox.position)
 //        line2.addCurve(to: endBox.position, controlPoint1: redBox.position, controlPoint2: blueBox.position)
         
-        line2.move(to: beginBox.position)
+        if makeMove {
+            line2.move(to: beginBox.position)
+        }
         line2.addQuadCurve(to: endBox.position, controlPoint: redBox.position)
+    }
+    
+    func makeSprite(line2: UIBezierPath, random: CGFloat) {
+        let centralP = CGPoint(x: self.view!.bounds.maxX, y: self.view!.bounds.maxY)
+        
+        
+        
+        
+        
+//        let line2Dashed = SKShapeNode(path: line2.cgPath, centered: true)
         
         let line2Dashed = SKShapeNode(path: line2.cgPath.copy(dashingWithPhase: 2, lengths: [4, 4]))
         line2Dashed.physicsBody = SKPhysicsBody(edgeChainFrom: line2.cgPath)
+
         line2Dashed.physicsBody?.categoryBitMask = PhysicsCat.mazeMan
         line2Dashed.physicsBody?.collisionBitMask = PhysicsCat.pacMan
         line2Dashed.physicsBody?.contactTestBitMask = PhysicsCat.pacMan | PhysicsCat.mazeMan
         line2Dashed.physicsBody?.affectedByGravity = false
         line2Dashed.zPosition = ObjectSpace.rings
+//        line2Dashed.zRotation = 45 * degreesToRadians
+        line2Dashed.zRotation = random
+        
         addChild(line2Dashed)
         
+//        line2Dashed.run(SKAction.rotate(byAngle: 90*degreesToRadians, duration: 10))
+        line2Dashed.fillColor = UIColor.white
+        line2Dashed.alpha = 0.5
+        line2Dashed.strokeColor = UIColor.red
+        line2Dashed.position = centralP
+//        line2Dashed.zRotation = -45 * degreesToRadians
+    
+        print("line2 \(line2)")
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
